@@ -1,8 +1,8 @@
 #!/usr/bin/bash
 
 user="vmuser"
-info_folder="/data/virtual_machines/vm_info"
-traffic_folder="/data/virtual_machines/traffic"
+info_folder="../../../data/virtual_machines/vm_info"
+traffic_folder="../../../data/virtual_machines/traffic"
 
 
 # get the parameters

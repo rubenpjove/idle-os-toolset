@@ -7,10 +7,11 @@ NC='\e[0m' # Reset
 
 VAGRANT_NAME=""
 VB_NAME=""
-PATH_VAGRANT_BASE="/data/virtual_machines/vagrant/"
-PATH_TRAFFIC="/data/virtual_machines/traffic/"
-PATH_SCRIPTS="/data/virtual_machines/scripts/"
-PATH_INFO="/data/virtual_machines/vm_info/"
+PATH_VAGRANT_BASE="data/virtual_machines/vagrant/"
+PATH_TRAFFIC="data/virtual_machines/traffic/"
+PATH_SCRIPTS="data/virtual_machines/scripts/"
+PATH_INFO="data/virtual_machines/vm_info/"
+PATH_OS_INFO="data/virtual_machines/os_info/"
 vmuser="vmuser"
 
 # Show help and usage
@@ -52,6 +53,7 @@ fi
 # Create paths
 PATH_VAGRANT="${PATH_VAGRANT_BASE}${VB_NAME}"
 
+echo $PATH_VAGRANT
 
 # New folder for vagrant
 # Check if directory exists
@@ -107,7 +109,6 @@ fi
 echo "Waiting for machine to boot (60 seconds), then will get info about OS, MAC and IP addresses ..."
 sleep 60
 
-guest_os=$(su - $vmuser -c "VBoxManage showvminfo '$VB_NAME'" | grep "Guest OS" | awk -F': ' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//')
 mac=$(su - $vmuser -c "VBoxManage guestproperty get '$VB_NAME' /VirtualBox/GuestInfo/Net/0/MAC")
 if [ "$mac" = "No value set!" ]; then
   mac="unknown"
@@ -121,7 +122,6 @@ else
   ipv4=$(echo $ipv4 | awk -F'[ ]+' '{print $2}')
 fi
 
-echo $guest_os
 echo $mac
 su - $vmuser -c "cat > ${PATH_INFO}${VB_NAME}.json <<EOF
 {
@@ -139,11 +139,24 @@ su - $vmuser -c "cat > ${PATH_INFO}${VB_NAME}.json <<EOF
 EOF
 "
 
+os_output=$(su - $vmuser -c "cd $PATH_VAGRANT && vagrant winrm -c 'systeminfo | findstr /B /C:\"OS Name\" /C:\"OS Version\"'")
+os_name=$(echo "$os_output" | grep "OS Name" | awk -F': ' '{print $2}' | tr -d '\r')
+os_version=$(echo "$os_output" | grep "OS Version" | awk -F': ' '{print $2}' | tr -d '\r')
+
+su - $vmuser -c "cat > ${PATH_OS_INFO}${VB_NAME}.json <<EOF
+{
+  \"vm_name\": \"$VB_NAME\",
+  \"os_name\": \"$os_name\",
+  \"os_version\": \"$os_version\"
+}
+EOF
+"
+
 echo -e "${GREEN}Virtual machine created successfully.${NC}"
 echo -e "${YELLOW}Please fill in the missing information in the ${PATH_INFO}${VB_NAME}.json file. Either manually or by running the script ${PATH_SCRIPTS}update_info_file.sh.${NC}"
 
 
-# vm poweroff
+#vm poweroff
 su - $vmuser -c "vboxmanage controlvm '$VB_NAME' poweroff"
 echo "Virtual machine powered off."
 

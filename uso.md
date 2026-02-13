@@ -2,13 +2,23 @@
 
 
 
+```
+mkdir /mnt/ntfms
+mkfs.ext4 /dev/sdb1
+mount /dev/sdb1 /mnt/ntfms
+```
+
+
 Para poder ejecutar los scripts necesitamos un sistema operativo Linux que tenga instalado tanto VirtualBox como Vagrant junto al comando jq.
 
 
 
 ```
 
-apt install virtualbox vagrant jq
+apt install virtualbox jq
+wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
+sudo apt update && sudo apt install vagrant
 
 ```
 
@@ -34,6 +44,8 @@ Junto a la herramienta ipfixprobe.
 
 apt-get install -y gawk bc autoconf automake gcc g++ libtool libxml2-dev make pkg-config libpcap-dev libidn11-dev bison flex
 
+cd /mnt/ntmfs
+
 git clone --recursive https://github.com/CESNET/nemea
 
 cd nemea
@@ -52,7 +64,7 @@ apt install git make cmake g++ pkg-config rpm
 
 apt install libunwind-dev liblz4-dev libssl-dev libfuse3-dev libatomic1
 
-
+cd ..
 
 git clone https://github.com/CESNET/ipfixprobe.git
 
@@ -70,6 +82,8 @@ make -j$(nproc)
 
 make install
 
+cd ..
+
 ```
 
 
@@ -80,7 +94,7 @@ Una vez instaldo todos los paquetes debemos crear un usuario vmuser sin contrase
 
 ```
 
-adduser vmuser --gecos
+adduser vmuser --gecos --home /mnt/ntfms
 
 ```
 
@@ -106,19 +120,24 @@ Además hay que crear la carpeta /data y todos sus directorios en los cuales se 
 
 ```
 
-mkdir -p /data/virtual_machines/vagrant/
+mkdir -p /mnt/ntfms/data/virtual_machines/vagrant/
 
-mkdir -p /data/virtual_machines/traffic/
+mkdir -p /mnt/ntfms/data/virtual_machines/traffic/
 
-mkdir -p /data/virtual_machines/scripts/
+mkdir -p /mnt/ntfms/data/virtual_machines/scripts/
 
-mkdir -p /data/virtual_machines/vm_info/
+mkdir -p /mnt/ntfms/data/virtual_machines/vm_info/
 
-cp scripts/* /data/virtual_machines/scripts/
+mkdir -p /mnt/ntfms/data/virtual_machines/os_info/
 
-chown -R vmuser:vmuser /data
+cp scripts/* /mnt/ntfms/data/virtual_machines/scripts/
 
-chmod -R 770 /data
+chown -R vmuser:vmuser /mnt/ntfms/
+
+chmod -R 777 /mnt/ntfms/
+
+usermod -aG vmuser <usuario>
+
 
 ```
 
@@ -130,7 +149,7 @@ Una vez hecho los pasos anteriores debemos dar permiso de ejecución a todos los
 
 ```
 
-chmod +x /data/virtual_machines/scripts/*.sh
+chmod +x ./data/virtual_machines/scripts/*.sh
 
 ```
 

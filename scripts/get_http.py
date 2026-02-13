@@ -5,7 +5,7 @@ import sys
 import argparse
 import json
 
-INFO_PATH = '/data/virtual_machines/vm_info'
+INFO_PATH = '../../../data/virtual_machines/vm_info'
 
 # parse arguments
 parser = argparse.ArgumentParser(description='Extract HTTP requests from traffic capture files')

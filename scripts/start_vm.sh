@@ -6,8 +6,8 @@ YELLOW='\e[33m'
 NC='\e[0m'
 
 user="vmuser"
-traffic_path="/data/virtual_machines/traffic"
-info_path="/data/virtual_machines/vm_info"  
+traffic_path="../../../data/virtual_machines/traffic"
+info_path="../../../data/virtual_machines/vm_info"  
 capture_time=0
 minutes=true
 seconds=false

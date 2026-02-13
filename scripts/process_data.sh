@@ -1,8 +1,8 @@
 #!/usr/bin/bash
 
 user="vmuser"
-info_path="/data/virtual_machines/vm_info"
-script_path="/data/virtual_machines/scripts"
+info_path="../../../data/virtual_machines/vm_info"
+script_path="../../../data/virtual_machines/scripts"
 
 usage() {
     echo "Usage:"

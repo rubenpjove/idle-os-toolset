@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 user="vmuser"
-vagrant_path="/data/virtual_machines/vagrant"
+vagrant_path="../../../data/virtual_machines/vagrant"
 
 # get the parameters
 usage() {
@@ -20,6 +20,7 @@ if ! su - $user -c "vboxmanage list vms | grep -q '$vm_name'"; then
     echo "Error: Required virtual machine does not exist."
     # remove vagrant folder if it exists
     vagrant_path="${vagrant_path}/${vm_name}"
+    echo $vagrant_path
     if [ -d "$vagrant_path" ]; then
         echo "There is a vagrant folder for the virtual machine with this name ($vm_name). Do you want to delete it? (yes/no)"
         read answer

@@ -6,7 +6,7 @@ import argparse
 import json
 import pandas as pd
 
-INFO_PATH = '/data/virtual_machines/vm_info'
+INFO_PATH = '../../../data/virtual_machines/vm_info'
 
 # parse arguments
 parser = argparse.ArgumentParser(description='Extract DNS requests from VM traffic (from CSV flow files)')
