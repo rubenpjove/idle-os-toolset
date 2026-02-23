@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 user="vmuser"
-vagrant_path="../../../data/virtual_machines/vagrant"
+vagrant_path="data/virtual_machines/vagrant"
 
 # get the parameters
 usage() {

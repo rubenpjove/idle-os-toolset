@@ -15,7 +15,9 @@ Para poder ejecutar los scripts necesitamos un sistema operativo Linux que tenga
 
 ```
 
-apt install virtualbox jq
+apt install jq
+wget https://download.virtualbox.org/virtualbox/7.2.6/virtualbox-7.2_7.2.6-172322~Ubuntu~jammy_amd64.deb
+apt install ./virtualbox-7.2_7.2.6-172322~Ubuntu~jammy_amd64.deb
 wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
 sudo apt update && sudo apt install vagrant
@@ -24,16 +26,17 @@ sudo apt update && sudo apt install vagrant
 
 
 
-Además debemos instalar los el módulo ``pyshark`` de Python.
+Además debemos instalar el módulo ``pyshark`` de Python.
 
 
 
 ```
 
 pip install pyshark
+pip install google-genai
+apt install python-is-python3
 
 ```
-
 
 
 Junto a la herramienta ipfixprobe.
@@ -98,7 +101,12 @@ adduser vmuser --gecos --home /mnt/ntfms
 
 ```
 
+Y poner la variable de entorno para la API Key de Google AI
 
+```
+touch /mnt/ntfms/.bashrc
+export GEMINI_API_KEY=<key> >> /mnt/ntfms/.bash_profile
+```
 
 Modificamos el PAM para que no solicite la contraseña al hacer su. Añademos al principio del fichero ``/etc/pam.d/su``
 
