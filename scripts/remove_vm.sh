@@ -60,6 +60,7 @@ su - $user -c "vboxmanage unregistervm $vm_name --delete"
 
 # remove vagrant folder if it exists
 vagrant_path="${vagrant_path}/${vm_name}"
-if [ -d "$vagrant_path" ]; then
+
+#if [ -d "$vagrant_path" ]; then
     su - $user -c "rm -rf '$vagrant_path'"
-fi
+#fi

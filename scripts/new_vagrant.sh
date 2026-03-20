@@ -72,10 +72,29 @@ else
 fi
 
 # create Vagrantfile
-su - $vmuser -c "cat > $PATH_VAGRANT/Vagrantfile <<EOF
+if [[ "$VB_NAME" == *"windows"* ]]; then
+  # Windows guests
+  su - $vmuser -c "cat > $PATH_VAGRANT/Vagrantfile <<EOF
 Vagrant.configure('2') do |config|
   config.vm.box = '$VAGRANT_NAME'
-
+  config.vm.communicator = 'winrm'
+  config.vm.provider 'virtualbox' do |vb|
+    vb.name = '$VB_NAME'
+    vb.check_guest_additions = false
+    vb.gui = false
+  end
+end
+EOF
+"
+elif [[ "$VB_NAME" == *"android"* || "$VAGRANT_NAME" == *"android"* ]]; then
+  # Android guests
+  su - $vmuser -c "cat > $PATH_VAGRANT/Vagrantfile <<EOF
+Vagrant.configure('2') do |config|
+  config.vm.box = '$VAGRANT_NAME'
+  # Not check ssh connectivity for Android guests, as it is not supported by default
+  config.vm.communicator = 'dummy'
+  # Forward adb port to connect to the Android guest via adb from the host
+  config.vm.network 'forwarded_port', guest: 5555, host: 5555, auto_correct: true, id: 'adb', protocol: 'tcp'
   config.vm.provider 'virtualbox' do |vb|
     vb.name = '$VB_NAME'
     vb.check_guest_additions = false
@@ -83,6 +102,40 @@ Vagrant.configure('2') do |config|
 end
 EOF
 "
+
+elif [[ "$VB_NAME" == macOS_* || "$VB_NAME" == *"macOS"* || "$VAGRANT_NAME" == *"macos"* || "$VAGRANT_NAME" == *"macOS"* ]]; then
+  # macOS guests: apply VBox settings before first boot via vb.customize
+  su - $vmuser -c "cat > $PATH_VAGRANT/Vagrantfile <<EOF
+Vagrant.configure('2') do |config|
+  config.vm.box = '$VAGRANT_NAME'
+  config.vm.provider 'virtualbox' do |vb|
+    vb.name = '$VB_NAME'
+    vb.check_guest_additions = false
+    vb.customize ['modifyvm', :id, '--cpuidset', '00000001', '000106e5', '00100800', '00000209', '078bfbff']
+    vb.customize ['setextradata', :id, 'VBoxInternal/Devices/efi/0/Config/DmiSystemProduct', 'iMac19,1']
+    vb.customize ['setextradata', :id, 'VBoxInternal/Devices/efi/0/Config/DmiSystemVersion', '1.0']
+    vb.customize ['setextradata', :id, 'VBoxInternal/Devices/efi/0/Config/DmiBoardProduct', 'Mac-AA95B1DDAB278B95']
+    vb.customize ['setextradata', :id, 'VBoxInternal/Devices/smc/0/Config/DeviceKey', 'ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc']
+    vb.customize ['setextradata', :id, 'VBoxInternal/Devices/smc/0/Config/GetKeyFromRealSMC', '1']
+    vb.customize ['modifyvm', :id, '--cpu-profile', 'Intel Core i7-6700K']
+  end
+end
+EOF
+"
+else
+  # Other guests (Linux, etc.)
+  su - $vmuser -c "cat > $PATH_VAGRANT/Vagrantfile <<EOF
+Vagrant.configure('2') do |config|
+  config.vm.box = '$VAGRANT_NAME'
+  config.vm.boot_timeout = 120
+  config.vm.provider 'virtualbox' do |vb|
+    vb.name = '$VB_NAME'
+    vb.check_guest_additions = false
+  end
+end
+EOF
+"
+fi
 
 # check if the Vagrantfile was created
 if [ $? -ne 0 ]; then
@@ -106,7 +159,7 @@ fi
 
 # wait for the virtual machine to boot
 echo "Waiting for machine to boot (60 seconds), then will get info about OS, MAC and IP addresses ..."
-#sleep 60
+sleep 60
 
 guest_os=$(su - $vmuser -c "VBoxManage showvminfo '$VB_NAME'" | grep "Guest OS" | awk -F': ' '{print $2}' | sed 's/^[ \t]*//;s/[ \t]*$//')
 mac=$(su - $vmuser -c "VBoxManage guestproperty get '$VB_NAME' /VirtualBox/GuestInfo/Net/0/MAC")

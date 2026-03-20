@@ -1,23 +1,18 @@
 import argparse
-from google import genai
-from google.genai import types
 import os
 import json
 import subprocess
 import shlex
 
+
+from litellm import completion
+os.environ["GROQ_API_KEY"] = "API-KEY"
 home=os.path.expanduser("~")
 os_info_path=home+"/data/virtual_machines/os_info/"
-client = genai.Client()
-model = "gemini-flash-latest"
-
+vm_list_path=home+"/data/virtual_machines/vm_list.md"
 
 def generate_commands(vagrant_box, vm_name):
-    content = types.Content(
-        role="user",
-        parts=[
-            types.Part.from_text(
-                text=f"""
+    prompt = f"""
             I am utilizing the following Vagrant box: https://portal.cloud.hashicorp.com/vagrant/discover/{vagrant_box}. 
             
             Provide the necessary commands to obtain the OS information. The commands should return the output in the terminal. The OS information should include details such as OS family, OS type, and OS version.
@@ -29,63 +24,37 @@ def generate_commands(vagrant_box, vm_name):
             "Commands": ["command1", "command2"]
             }}
             """
-            ),
-        ],
-    )
-    tools = [
-        types.Tool(url_context=types.UrlContext()),
-    ]
-    generate_content_config = types.GenerateContentConfig(
-        tools=tools,
-    )
-    response = client.models.generate_content(
-            model=model,
-            contents=content,
-            config=generate_content_config,
-    )
 
-    content = types.Content(
-        role="user",
-        parts=[
-            types.Part.from_text(
-                text=f"""
-            I have generated the following commands to obtain OS information for the Vagrant box: {vagrant_box}. The commands are: {response.text}.
-            Please return the commands in a JSON format with the following structure:
-            {{
-            "Commands": ["command1", "command2"]
-            }}
-                        """
-                        ),
-                    ],
-            )
-    generate_content_config = types.GenerateContentConfig(
-        response_mime_type="application/json",
-            response_schema=genai.types.Schema(
-                type = genai.types.Type.OBJECT,
-                required = ["Commands"],
-                properties = {
-                    "Commands": genai.types.Schema(
-                        type = genai.types.Type.ARRAY,
-                        items = genai.types.Schema(
-                            type = genai.types.Type.STRING,
-                        ),
-                    ),
+    response = completion(
+        model="groq/openai/gpt-oss-120b",
+        messages=[
+            {"role": "user", "content": prompt},
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "commands",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "Commands": {
+                            "type": "array",
+                            "items": {"type": "string"}
+                        }
+                    },
+                    "required": ["Commands"],
                 },
-            ),
-    )
-    response = client.models.generate_content(
-            model=model,
-            contents=content,
-            config=generate_content_config,
+            },
+        },
     )
 
     os.makedirs(os_info_path + vm_name, exist_ok=True)
     with open(os_info_path + vm_name + "/commands.json", "w") as f:
         try:
-            json_data = json.loads(response.text)
+            json_data = json.loads(response.choices[0].message.content)
             json.dump(json_data, f, indent=4)
         except json.JSONDecodeError:
-            f.write(response.text)
+            f.write(response.choices[0].message.content)
 
 def execute_commands(vagrant_box, vm_name):
 
@@ -94,7 +63,10 @@ def execute_commands(vagrant_box, vm_name):
         commands = data.get("Commands", [])
         command_outputs = {}
         print(f"Executing commands for {vm_name}:")
-        if "windows" in vm_name.lower():
+        if "android" in vm_name.lower() or "android" in vagrant_box.lower():
+            os.system("adb connect localhost:5555")
+            remote_command = "adb -s localhost:5555 shell '{}'"
+        elif "windows" in vm_name.lower() or "windows" in vagrant_box.lower():
             remote_command = "vagrant winrm -c '{}'"
         else:
             remote_command = "vagrant ssh -c '{}'"
@@ -114,47 +86,56 @@ def execute_commands(vagrant_box, vm_name):
 def get_os_info(vagrant_box, vm_name):
     with open(os_info_path + vm_name + "/commands_execute.json", "r") as f:
         command_outputs = json.load(f)
-    contents = types.Content(
-        role="user",
-        parts=[
-            types.Part.from_text(
-                text=f"""
-            I have executed the following commands using the Vagrant box: {vagrant_box} and obtained the following outputs: {json.dumps(command_outputs)}.
-            Analyze the command outputs and provide a summary of the OS information. You must respond with the Os_Family, Os_Type and Os_Version."""
-            ),
-        ],
-    )
 
-    generate_content_config = types.GenerateContentConfig(
-        response_mime_type="application/json",
-        response_schema=genai.types.Schema(
-            type = genai.types.Type.OBJECT,
-            required = ["Os_Family", "Os_Type", "Os_Version"],
-            properties = {
-                "Os_Family": genai.types.Schema(
-                    type = genai.types.Type.STRING,
-                ),
-                "Os_Type": genai.types.Schema(
-                    type = genai.types.Type.STRING,
-                ),
-                "Os_Version": genai.types.Schema(
-                    type = genai.types.Type.STRING,
-                ),
+    with open(os_info_path + vm_name + "/commands.json", "r") as f:
+        commands = json.load(f).get("Commands", [])
+
+    with open(vm_list_path, "r") as f:
+        vm_list = f.read()
+
+
+    prompt = f"""
+            I have executed the following commands {commands} and obtained the following outputs: {json.dumps(command_outputs)}.
+            Analyze the command outputs and provide a summary of the OS information. You must respond with the Os_Family, Os_Type and Os_Version.
+            OUTPUT FORMAT:
+            You must respond ONLY with a valid JSON object. Do not include explanations or markdown backticks.
+            The JSON structure must be:
+            {{
+            "Os_Family": "...",
+            "Os_Type": "...",
+            "Os_Version": "..."
+            }}
+            The values should be similar to the values of this file: {vm_list}.
+            """
+
+    response = completion(
+        model="groq/openai/gpt-oss-120b",
+        messages=[
+            {"role": "user", "content": prompt},
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "os_info",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "Os_Family": {"type": "string"},
+                        "Os_Type": {"type": "string"},
+                        "Os_Version": {"type": "string"},
+                    },
+                    "required": ["Os_Family", "Os_Type", "Os_Version"],
+                },
             },
-        ),
-    )
-    response = client.models.generate_content(
-            model=model,
-            contents=contents,
-            config=generate_content_config,
+        },
     )
 
     with open(os_info_path + vm_name + "/os_info.json", "w") as f:
         try:
-            json_data = json.loads(response.text)
+            json_data = json.loads(response.choices[0].message.content)
             json.dump(json_data, f, indent=4)
         except json.JSONDecodeError:
-            f.write(response.text)
+            f.write(response.choices[0].message.content)
 
 
 if __name__ == "__main__":
