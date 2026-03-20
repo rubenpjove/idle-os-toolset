@@ -97,19 +97,10 @@ sed -i '1iauth sufficient pam_succeed_if.so user = vmuser' /etc/pam.d/su
 
 This change only affects the `su` command when targeting `vmuser`.
 
-#### 6. Install Android communication tools
-
-To communicate with Android virtual machines and devices, install the following:
-
-```bash
-apt install android-tools-adb
-
-su - vmuser -c "vagrant plugin install vagrant-dummy-communicator"
-```
 
 The `vagrant-dummy-communicator` plugin allows Vagrant to manage Android-based boxes that do not expose a standard SSH interface.
 
-#### 7. Create data directories and set permissions
+#### 6. Create data directories and set permissions
 
 Create the data directory structure where all files related to these scripts will be stored, and give `vmuser` read and write permissions:
 
@@ -128,6 +119,16 @@ usermod -aG virtualbox vmuser
 ```
 
 After this step, `vmuser` will own the entire project root directory (for example, `/mnt/ntfms`) and will belong to the `virtualbox` group, which allows it to manage VirtualBox virtual machines properly.
+
+#### 7. Install Android communication tools
+
+To communicate with Android virtual machines and devices, install the following:
+
+```bash
+apt install android-tools-adb
+
+su - vmuser -c "vagrant plugin install vagrant-dummy-communicator"
+```
 
 #### 8. Make shell scripts executable
 
