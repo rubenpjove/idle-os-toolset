@@ -32,12 +32,8 @@ Install the Python packages required by the scripts:
 - `python-is-python3`: to have the `python` command point to Python 3.
 
 ```bash
-pip install pyshark
-pip install litellm
-pip install pandas
-apt install python3-tk
-apt install python-is-python3
-apt install tshark
+pip install pyshark litellm pandas
+apt install -y python3-tk python-is-python3 tshark
 ```
 
 In the `get_os_info.py` file you will find a template for the requests that use the Groq model. You must insert your API key in the corresponding environment variable. If you use a different model or provider, update both the model configuration and the environment variable name to match your new provider.
