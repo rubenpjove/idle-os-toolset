@@ -43,7 +43,7 @@ In the `get_os_info.py` file you will find a template for the requests that use 
 The toolkit can integrate with `ipfixprobe` and NEMEA to process IPFIX/flow records. Install the required build dependencies and compile the tools as follows:
 
 ```bash
-apt-get install -y gawk bc autoconf automake gcc g++ libtool libxml2-dev make pkg-config libpcap-dev libidn11-dev bison flex libpcap
+apt-get install -y gawk bc autoconf automake gcc g++ libtool libxml2-dev make pkg-config libpcap-dev libidn11-dev bison flex
 
 cd "$TOOLSET_ROOT"
 
