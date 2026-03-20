@@ -111,7 +111,7 @@ mkdir -p "$TOOLSET_ROOT"/data/virtual_machines/scripts/
 mkdir -p "$TOOLSET_ROOT"/data/virtual_machines/vm_info/
 mkdir -p "$TOOLSET_ROOT"/data/virtual_machines/os_info/
 
-cp scripts/* "$TOOLSET_ROOT"/data/virtual_machines/scripts/
+cp idle-os-toolset/scripts/* "$TOOLSET_ROOT"/data/virtual_machines/scripts/
 
 chown -R vmuser:vmuser "$TOOLSET_ROOT"/
 
