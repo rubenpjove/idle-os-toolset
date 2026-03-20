@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 OS Info & Commands Viewer
 Multi-platform tool to view and edit OS information and command outputs.

@@ -2,6 +2,8 @@
 
 user="vmuser"
 vagrant_path="data/virtual_machines/vagrant"
+os_info_path="data/virtual_machines/os_info"
+vm_info_path="data/virtual_machines/vm_info"
 
 # get the parameters
 usage() {
@@ -64,3 +66,15 @@ vagrant_path="${vagrant_path}/${vm_name}"
 #if [ -d "$vagrant_path" ]; then
     su - $user -c "rm -rf '$vagrant_path'"
 #fi
+
+# remove the os_info file if it exists
+os_info_file="${os_info_path}/${vm_name}.json"
+if [ -f "$os_info_file" ]; then
+    su - $user -c "rm -f '$os_info_file'"
+fi
+
+# remove the vm_info file if it exists
+vm_info_file="${vm_info_path}/${vm_name}.json"
+if [ -f "$vm_info_file" ]; then
+    su - $user -c "rm -f '$vm_info_file'"
+fi
