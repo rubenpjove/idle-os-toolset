@@ -209,46 +209,41 @@ def main_menu():
     
     while True:
         clear_screen()
+        vm_name = vm_names[current_idx]
+
+        # Show info for the current VM immediately
         print_header("OS Info & Commands Viewer (CLI)")
         display_vm_list(vm_names, current_idx)
-        
-        vm_name = vm_names[current_idx]
-        
-        print(f"{Colors.BOLD}Menu:{Colors.ENDC}")
-        print(f"  {Colors.CYAN}[1]{Colors.ENDC} View OS Info & Command Output")
-        print(f"  {Colors.CYAN}[2]{Colors.ENDC} Edit OS Info")
+        display_both_info(vm_name)
+
+        # Simple controls to navigate and edit
+        print(f"{Colors.BOLD}Controls:{Colors.ENDC}")
         print(f"  {Colors.CYAN}[n]{Colors.ENDC} Next VM")
         print(f"  {Colors.CYAN}[p]{Colors.ENDC} Previous VM")
-        print(f"  {Colors.CYAN}[l]{Colors.ENDC} List all VMs")
+        print(f"  {Colors.CYAN}[e]{Colors.ENDC} Edit OS Info (.json)")
         print(f"  {Colors.CYAN}[q]{Colors.ENDC} Quit")
         print()
-        
-        choice = input(f"{Colors.BOLD}Enter choice:{Colors.ENDC} ").strip().lower()
-        
-        if choice == '1':
-            display_both_info(vm_name)
-            input(f"{Colors.YELLOW}Press Enter to continue...{Colors.ENDC}")
-        
-        elif choice == '2':
+
+        choice = input(f"{Colors.BOLD}Choice:{Colors.ENDC} ").strip().lower()
+
+        if choice == 'n':
+            # Next VM, stop at the last one
+            if current_idx < len(vm_names) - 1:
+                current_idx += 1
+
+        elif choice == 'p':
+            # Previous VM, stop at the first one
+            if current_idx > 0:
+                current_idx -= 1
+
+        elif choice == 'e':
             edit_os_info(vm_name)
             input(f"{Colors.YELLOW}Press Enter to continue...{Colors.ENDC}")
-        
-        elif choice == 'n':
-            current_idx = (current_idx + 1) % len(vm_names)
-        
-        elif choice == 'p':
-            current_idx = (current_idx - 1) % len(vm_names)
-        
-        elif choice == 'l':
-            clear_screen()
-            print_header("List of All Virtual Machines")
-            display_vm_list(vm_names)
-            input(f"{Colors.YELLOW}Press Enter to continue...{Colors.ENDC}")
-        
+
         elif choice == 'q':
             print_info("Goodbye!")
             break
-        
+
         else:
-            print_error("Invalid choice. Please try again.")
+            print_error("Invalid option. Please try again.")
             input(f"{Colors.YELLOW}Press Enter to continue...{Colors.ENDC}")
