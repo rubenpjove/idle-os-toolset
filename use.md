@@ -135,7 +135,7 @@ su - vmuser -c "vagrant plugin install vagrant-dummy-communicator"
 Finally, give execution permissions to all shell scripts in the `scripts` directory:
 
 ```bash
-chmod +x ./data/virtual_machines/scripts/*.sh
+chmod +x "$TOOLSET_ROOT"/data/virtual_machines/scripts/*.sh
 ```
 
 At this point, the environment should be ready to use the toolkit scripts in both CLI and GUI modes.
