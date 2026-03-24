@@ -13,7 +13,7 @@ export TOOLSET_ROOT=/mnt/ntfms   # change this if you use a different root path
 ```bash
 apt install jq virtualbox
 
-VB_VER=$(VBoxManage -v | cut -d'r' -f1)
+VB_VER=$(VBoxManage -v | cut -d'_' -f1)
 wget "https://download.virtualbox.org/virtualbox/${VB_VER}/Oracle_VM_VirtualBox_Extension_Pack-${VB_VER}.vbox-extpack"
 VBoxManage extpack install "Oracle_VM_VirtualBox_Extension_Pack-${VB_VER}.vbox-extpack"
 
