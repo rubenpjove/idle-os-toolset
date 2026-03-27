@@ -97,9 +97,6 @@ sed -i '1iauth sufficient pam_succeed_if.so user = vmuser' /etc/pam.d/su
 
 This change only affects the `su` command when targeting `vmuser`.
 
-
-The `vagrant-dummy-communicator` plugin allows Vagrant to manage Android-based boxes that do not expose a standard SSH interface.
-
 #### 6. Create data directories and set permissions
 
 Create the data directory structure where all files related to these scripts will be stored, and give `vmuser` read and write permissions:
