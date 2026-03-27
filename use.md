@@ -82,7 +82,7 @@ After this step, `ipfixprobe` and the NEMEA components will be available system-
 Once all packages are installed, create the `vmuser` user (without a password). The home directory of `vmuser` must be the directory where you want to store everything related to this project (toolkit files, virtual machines, traffic captures, etc.). This directory must match the value you chose for `TOOLSET_ROOT`.
 
 ```bash
-adduser vmuser --gecos --home "$TOOLSET_ROOT"
+adduser vmuser --gecos "" --home "$TOOLSET_ROOT"
 ```
 
 This user will own the data and scripts used to manage the virtual machines.
