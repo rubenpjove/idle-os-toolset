@@ -11,11 +11,13 @@ export TOOLSET_ROOT=/mnt/ntfms   # change this if you use a different root path
 #### 1. Install VirtualBox, Extension Pack, Vagrant and jq
 
 ```bash
-apt install jq virtualbox
+apt install jq
 
-VB_VER=$(VBoxManage -v | cut -d'_' -f1)
-wget "https://download.virtualbox.org/virtualbox/${VB_VER}/Oracle_VM_VirtualBox_Extension_Pack-${VB_VER}.vbox-extpack"
-VBoxManage extpack install "Oracle_VM_VirtualBox_Extension_Pack-${VB_VER}.vbox-extpack"
+wget "https://download.virtualbox.org/virtualbox/7.2.6/virtualbox-7.2_7.2.6-172322~Ubuntu~jammy_amd64.deb"
+apt install ./virtualbox-7.2_7.2.6-172322~Ubuntu~jammy_amd64.deb
+
+wget "https://download.virtualbox.org/virtualbox/7.2.6/Oracle_VirtualBox_Extension_Pack-7.2.6.vbox-extpack"
+VBoxManage extpack install "Oracle_VirtualBox_Extension_Pack-7.2.6.vbox-extpack"
 
 wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(grep -oP '(?<=UBUNTU_CODENAME=).*' /etc/os-release || lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
