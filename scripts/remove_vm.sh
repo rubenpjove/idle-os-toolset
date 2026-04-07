@@ -20,11 +20,13 @@ fi
 # Check if the virtual machine exists
 if ! su - $user -c "vboxmanage list vms | grep -q '$vm_name'"; then
     echo "Error: Required virtual machine does not exist."
-    # remove vagrant folder if it exists
+    # remove vagrant , os_info folder and vm_info file if it exists
     vagrant_path="${vagrant_path}/${vm_name}"
+    os_info_file="${os_info_path}/${vm_name}"
+    vm_info_file="${vm_info_path}/${vm_name}.json"
     echo $vagrant_path
-    if [ -d "$vagrant_path" ]; then
-        echo "There is a vagrant folder for the virtual machine with this name ($vm_name). Do you want to delete it? (yes/no)"
+    if su - "$user" -c "[ -d '$vagrant_path' ]"; then
+        echo "There are leftover files/folders for virtual machine ($vm_name). Do you want to delete vagrant, os_info and vm_info? (yes/no)"
         read answer
         if [ "$answer" == "yes" ]; then
             su - $user -c "rm -rf '$vagrant_path'"
@@ -32,6 +34,24 @@ if ! su - $user -c "vboxmanage list vms | grep -q '$vm_name'"; then
                 echo "Vagrant folder deleted"
             else
                 echo "Error: Could not delete the vagrant folder"
+            fi
+
+            if su - "$user" -c "[ -d '$os_info_file' ]"; then
+                su - $user -c "rm -rf '$os_info_file'"
+                if [ $? -eq 0 ]; then
+                    echo "os_info removed"
+                else
+                    echo "Error: Could not remove os_info"
+                fi
+            fi
+
+            if su - "$user" -c "[ -f '$vm_info_file' ]"; then
+                su - $user -c "rm -f '$vm_info_file'"
+                if [ $? -eq 0 ]; then
+                    echo "vm_info removed"
+                else
+                    echo "Error: Could not remove vm_info"
+                fi
             fi
         fi
     fi
@@ -63,18 +83,24 @@ su - $user -c "vboxmanage unregistervm $vm_name --delete"
 # remove vagrant folder if it exists
 vagrant_path="${vagrant_path}/${vm_name}"
 
-#if [ -d "$vagrant_path" ]; then
+
+if su - "$user" -c "[ -d '$vagrant_path' ]"; then
     su - $user -c "rm -rf '$vagrant_path'"
-#fi
+fi
+
 
 # remove the os_info file if it exists
-os_info_file="${os_info_path}/${vm_name}.json"
-if [ -f "$os_info_file" ]; then
-    su - $user -c "rm -f '$os_info_file'"
+os_info_file="${os_info_path}/${vm_name}"
+
+
+if su - "$user" -c "[ -d '$os_info_file' ]"; then
+    su - $user -c "rm -rf '$os_info_file'"
 fi
 
 # remove the vm_info file if it exists
 vm_info_file="${vm_info_path}/${vm_name}.json"
-if [ -f "$vm_info_file" ]; then
+
+
+if su - "$user" -c "[ -f '$vm_info_file' ]"; then
     su - $user -c "rm -f '$vm_info_file'"
 fi

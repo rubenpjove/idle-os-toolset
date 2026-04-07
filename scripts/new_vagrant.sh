@@ -77,7 +77,9 @@ if [[ "$VB_NAME" == *"windows"* ]]; then
   su - $vmuser -c "cat > $PATH_VAGRANT/Vagrantfile <<EOF
 Vagrant.configure('2') do |config|
   config.vm.box = '$VAGRANT_NAME'
+  config.ssh.insert_key = true
   config.vm.communicator = 'winrm'
+  config.vm.synced_folder '.', '/vagrant', disabled: true
   config.vm.provider 'virtualbox' do |vb|
     vb.name = '$VB_NAME'
     vb.check_guest_additions = false
@@ -91,6 +93,8 @@ elif [[ "$VB_NAME" == *"android"* || "$VAGRANT_NAME" == *"android"* ]]; then
   su - $vmuser -c "cat > $PATH_VAGRANT/Vagrantfile <<EOF
 Vagrant.configure('2') do |config|
   config.vm.box = '$VAGRANT_NAME'
+  config.vm.synced_folder '.', '/vagrant', disabled: true
+  config.ssh.insert_key = true
   # Not check ssh connectivity for Android guests, as it is not supported by default
   config.vm.communicator = 'dummy'
   # Forward adb port to connect to the Android guest via adb from the host
@@ -102,12 +106,20 @@ Vagrant.configure('2') do |config|
 end
 EOF
 "
+  if ! su - $vmuser -c "netstat -putona | grep -qi 'adb'"; then
+    echo "ADB server is not running for $vmuser. Starting it..."
+    su - $vmuser -c "adb start-server"
+  else
+    echo "ADB server is already running for $vmuser."
+  fi
 
 elif [[ "$VB_NAME" == macOS_* || "$VB_NAME" == *"macOS"* || "$VAGRANT_NAME" == *"macos"* || "$VAGRANT_NAME" == *"macOS"* ]]; then
   # macOS guests: apply VBox settings before first boot via vb.customize
   su - $vmuser -c "cat > $PATH_VAGRANT/Vagrantfile <<EOF
 Vagrant.configure('2') do |config|
   config.vm.box = '$VAGRANT_NAME'
+  config.vm.synced_folder '.', '/vagrant', disabled: true
+  config.ssh.insert_key = true
   config.vm.provider 'virtualbox' do |vb|
     vb.name = '$VB_NAME'
     vb.check_guest_additions = false
@@ -128,6 +140,8 @@ else
 Vagrant.configure('2') do |config|
   config.vm.box = '$VAGRANT_NAME'
   config.vm.boot_timeout = 120
+  config.vm.synced_folder '.', '/vagrant', disabled: true
+  config.ssh.insert_key = true
   config.vm.provider 'virtualbox' do |vb|
     vb.name = '$VB_NAME'
     vb.check_guest_additions = false
@@ -146,6 +160,7 @@ else
 fi
 
 su - $vmuser -c "cd $PATH_VAGRANT && vagrant up"
+
 
 
 # check if vm is running
