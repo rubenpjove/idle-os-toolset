@@ -1,5 +1,5 @@
 jq: 1.6
-VirtualBox: 6.1.50
+VirtualBox: 7.2.6r172322
 Vagrant: 2.4.9
 pandas: 2.3.3
 pyshark: 0.6
