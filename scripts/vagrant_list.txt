@@ -1,0 +1,7 @@
+gusztavvargadr/windows-10-21h2-enterprise-ltsc;windows_10
+gusztavvargadr/windows-server-2019-standard-core;windows_2019
+ferventcoder/win2008r2-x64-nocm;windows_2008r2
+StefanScherer/windows_2016;windows_2016
+ramsey/macos-catalina;macos_10.15
+jhcook/osx-yosemite-10.10;macos_10.10
+dictcp/android-x86;android_9
