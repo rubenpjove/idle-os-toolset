@@ -17,7 +17,7 @@ For a list of available VMs, run the command `list_vms.sh`. To list only running
 
 ## Add or update information about a VM
 
-Before running any VM and capturing its network traffic, the info file must be configured. To configure this file, you can use the script `scripts/update_vm_info.sh`. Alternatively, you can configure this file manually. All files with information about VMs are stored in the folder `/data/virtual_machines/vm_info/`. In this folder, there is a JSON file for each VM; this file must have the same name as the VM in VirtualBox. The file must contain the following information:
+Before running any VM and capturing its network traffic, the info file must be configured. To configure this file, you can use the script `scripts/update_info_file.sh`. Alternatively, you can configure this file manually. All files with information about VMs are stored in the folder `/data/virtual_machines/vm_info/`. In this folder, there is a JSON file for each VM; this file must have the same name as the VM in VirtualBox. The file must contain the following information:
 
 ```json
 {
@@ -121,6 +121,14 @@ The `get_*.py` scripts normally aren't run directly. If you need them, the `--he
 
 When data from all VMs are processed, the `merge_csv_files.sh` script can be used to merge data of application-layer requests of individual OSes (VMs) into a single one.
 
+```bash
+merge_csv_files.sh [-o output_dir | --output output_dir]
+```
+
+| Short Option | Long Option  | Description |
+|--------------|--------------|-------------|
+| -o           | --output     | Directory where merged CSV files will be written (default: `data/virtual_machines/traffic`) |
+
 Files `merged_dns.csv`, `merged_http.csv` and `merged_tls.csv` are created, containing the following fields:
 
 ```
@@ -174,7 +182,7 @@ Example: `ubuntu/focal64;ubuntu_focal`
 
 ## Add a New VM via Vagrant
 
-A new virtual machine can be added manually via the VirtualBox manager or via Vagrant. To add a new VM via Vagrant, the script `new_vagrant` can be used. This script will create a folder and `Vagrantfile` with configuration for the VM, and then the VM will be created. The script also creates a folder for storing files containing captured network traffic and a file with information about the VM, such as the used VagrantBox, IP address, MAC address, and OS.
+A new virtual machine can be added manually via the VirtualBox manager or via Vagrant. To add a new VM via Vagrant, the script `new_vagrant` can be used. This script will create a folder and `Vagrantfile` with configuration for the VM, and then the VM will be created. The script also creates a folder for storing files containing captured network traffic and a file with information about the VM, such as the used VagrantBox, IP address, MAC address, and OS. After creation, it automatically runs `get_os_info.py` to detect the OS family, type, and version, and then calls `update_info_file.sh` to populate the VM info file with the detected values.
 
 ### Usage:
 
@@ -188,7 +196,7 @@ Example: `new_vagrant -v ubuntu/bionic64 -b ubuntu_bionic`
 
 ## Remove a VM
 
-To remove an existing VM, use the script `remove_vm`. The VM will be removed from VirtualBox along with all files. If the VM has a folder with a `Vagrantfile`, this folder will be removed as well.
+To remove an existing VM, use the script `remove_vm`. The VM will be removed from VirtualBox along with all files. If the VM has a folder with a `Vagrantfile`, this folder will be removed as well. The VM info file (`vm_info/<vm_name>.json`) and the OS info folder (`os_info/<vm_name>/`) are also deleted.
 
 ### Usage
 
@@ -230,7 +238,7 @@ Example of folder hierarchy:
 ### Usage
 
 ```bash
-list_vms.sh <vm_name> [-r | --running]
+list_vms.sh [-r | --running]
 ```
 
 ## Information about available virtual machines
@@ -240,13 +248,13 @@ All available virtual machines are listed in file `vm_list.md` with all availabl
 ### Usage of `get_vms_info.py`
 
 ```bash
-python3 get_vms_info.py [-p | --path] [-o | --output]
+python3 get_vms_info.py -p <path> -o <output>
 ```
 
 | Short Option | Long Option | Description |
 |--------------|-------------|-------------|
-| -p           | --path      | Path to the folder with VMs info files |
-| -o           | --output    | Output Markdown file |
+| -p           | --path      | Path to the folder with VMs info files (required) |
+| -o           | --output    | Output Markdown file (required) |
 
 ## Get OS Information of a VM
 
