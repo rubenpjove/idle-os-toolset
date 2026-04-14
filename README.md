@@ -278,7 +278,6 @@ python3 get_os_info.py -v <vagrant_box> -b <vm_name>
 python3 os_info.py              # Launch GUI (default)
 python3 os_info.py --gui        # Launch GUI (explicit)
 python3 os_info.py --cli        # Launch CLI (terminal mode)
-python3 os_info.py -h           # Show help
 ```
 
 | Option  | Description                    |
