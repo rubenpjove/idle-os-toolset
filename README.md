@@ -9,6 +9,8 @@ There are also scripts to process the data -- convert raw packet captures (PCAPs
 
 Instalation guide in [Installation.md](Installation.md)
 
+Versions of the packages and tools are listed in [Versions.txt](versions.txt)
+
 ---
 
 **VM provider:** VirtualBox
