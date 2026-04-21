@@ -7,6 +7,9 @@ The dataset contains captured network traffic of various operating systems (OS) 
 The toolset allows to create a set of virtual machines (VM) in VirtualBox, run them for a specified amount of time and capture the traffic they generate.
 There are also scripts to process the data -- convert raw packet captures (PCAPs) to rich flow records using [ipfixprobe](https://cesnet.github.io/ipfixprobe/) and extract details of DNS, HTTP and TLS traffic.
 
+Instalation guide in [INSTALL.md](INSTALL.md).
+
+Versions of the packages and tools are listed in [DEPENDENCIES.md](DEPENDENCIES.md).
 
 ---
 
@@ -174,7 +177,7 @@ Example: `ubuntu/focal64;ubuntu_focal`
 
 ## Add a New VM via Vagrant
 
-A new virtual machine can be added manually via the VirtualBox manager or via Vagrant. To add a new VM via Vagrant, the script `new_vagrant` can be used. This script will create a folder and `Vagrantfile` with configuration for the VM, and then the VM will be created. The script also creates a folder for storing files containing captured network traffic and a file with information about the VM, such as the used VagrantBox, IP address, MAC address, and OS.
+A new virtual machine can be added manually via the VirtualBox manager or via Vagrant. To add a new VM via Vagrant, the script `new_vagrant` can be used. This script will create a folder and `Vagrantfile` with configuration for the VM, and then the VM will be created. The script also creates a folder for storing files containing captured network traffic and a file with information about the VM, such as the used VagrantBox, IP address, MAC address, and OS. The script uses get_os_info.py to retrieve OS information and update_info_file.sh to include this information in the file.
 
 ### Usage:
 
