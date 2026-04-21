@@ -7,9 +7,9 @@ The dataset contains captured network traffic of various operating systems (OS) 
 The toolset allows to create a set of virtual machines (VM) in VirtualBox, run them for a specified amount of time and capture the traffic they generate.
 There are also scripts to process the data -- convert raw packet captures (PCAPs) to rich flow records using [ipfixprobe](https://cesnet.github.io/ipfixprobe/) and extract details of DNS, HTTP and TLS traffic.
 
-Instalation guide in [Installation.md](Installation.md).
+Instalation guide in [INSTALL.md](INSTALL.md).
 
-Versions of the packages and tools are listed in [Versions.txt](versions.txt).
+Versions of the packages and tools are listed in [DEPENDENCIES.md](DEPENDENCIES.md).
 
 ---
 
