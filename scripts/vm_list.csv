@@ -1,5 +1,4 @@
 type,name,vm_name,hash,user,password,source,link
-type,name,vm_name,hash,user,password,source,link
 vagrant,rubenjove/ArchLinux_20240601,ArchLinux_20240601,,,,,
 vagrant,timerags/alinux2,alinux_2,,,,,
 vagrant,rubenjove/android-x86_4.0,android-x86_4.0,,,,,
