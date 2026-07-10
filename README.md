@@ -45,7 +45,7 @@ Fields `vm_name`, `source`, `os_family`, `os_type`, and `os_version` are require
 This script automatically adds the given information to the info file of a particular VM.
 
 ```bash
-./update_info_file.sh vm_name [-s source | --source source] [-l link | --link link] [-H hash | --hash hash] [-f os_family | --os_family os_family] [-t os_type | --os_type os_type] [-v os_version | --os_version os_version] [-i IPv4 | --IPv4 IPv4] [-m MAC | --MAC MAC] [-h | --help]
+./update_info_file.sh <vm_name> [-s source | --source source] [-l link | --link link] [-H hash | --hash hash] [-f os_family | --os_family os_family] [-t os_type | --os_type os_type] [-v os_version | --os_version os_version] [-i IPv4 | --IPv4 IPv4] [-m MAC | --MAC MAC] [-h | --help]
 ```
 
 | Short Option | Long Option        | Description                                           |
@@ -127,7 +127,7 @@ capture_loop.sh --ranges N-M[,N-M...] -t capture_time (-m|-s|-H|-d) [-w wait_sec
 
 ## Start/stop a VM without capturing traffic
 
-`boot_vm.sh` and `shutdown_vm.sh` start and stop VMs the same way as `start_vm.sh`/`stop_vm.sh`, but without touching traffic capture or pcap processing at all. They're mainly used to boot and shut down VMs for Nmap OS fingerprinting scans where no traffic capture is needed.
+`boot_vm.sh` and `shutdown_vm.sh` start and stop VMs the same way as `start_vm.sh`/`stop_vm.sh`, but without capturing traffic or pcap processing. They're mainly used to boot and shut down VMs for Nmap OS fingerprinting scans where no traffic capture is needed.
 
 ### Usage
 
@@ -150,7 +150,7 @@ nmap.sh [--outdir <dir>] [--outfile <filename.csv>]
 
 | Option    | Description                                  |
 |-----------|-----------------------------------------------|
-| --outdir  | Output directory for the CSV (default: script's directory) |
+| --outdir  | Output directory for the CSV (default: `nmap/` directory) |
 | --outfile | Output CSV filename (default: `nmap_results_<timestamp>.csv`) |
 
 The output CSV contains: `vm_name, ip, mac, Os_Family, Os_Type, Os_Version, fingerprint_nmap`.
@@ -170,7 +170,7 @@ nmap_batch_scan.sh --ranges N-M[,N-M...] [--wait SECONDS]
 
 ## Check for duplicate VM MAC addresses
 
-Cloning or importing VM images can leave multiple VMs sharing the same MAC address on NIC 1, which breaks the ARP-based IP matching used by `nmap.sh` and can otherwise confuse the host-only network. `check_vm_macs.sh` scans all registered VMs, reports duplicate MACs, and can regenerate a random MAC for each duplicate.
+Cloning or importing VM images can leave duplicate NIC 1 MAC addresses across VMs, breaking ARP-based IP matching in `nmap.sh` and potentially confusing the host-only network. `check_vm_macs.sh` detects these duplicate MACs across all registered VMs and can regenerate a random MAC for each one.
 
 ### Usage
 
@@ -218,15 +218,13 @@ get_vms_config.sh
 
 ## Captured pcap statistics
 
-`get_pcaps_stats.sh` walks the traffic folder and, for every capture `.pcap` file found, uses `tshark` to compute its duration, packet count, size, and protocol hierarchy. Each capture is matched back to its VM via the `vm_info/*.json` files to also record the OS family, type, and version. Results are written to a CSV file.
+`get_pcaps_stats.sh` walks the `traffic` folder and, for each `.pcap` file found, uses `tshark` to compute its duration, packet count, size, and protocol hierarchy. Each capture is matched to its VM to also record OS family, type, and version, and all results are wirtten to a CSV file.
 
 ### Usage
 
 ```bash
 get_pcaps_stats.sh [traffic_dir] [--outdir <dir>] [--outfile <filename.csv>]
 ```
-
-The `MAX_SECONDS` environment variable (default: 30) bounds how long `tshark` is allowed to run per pcap file.
 
 ## Data processing
 
@@ -274,7 +272,7 @@ When you have a list of Vagrant boxes and/or a list of VM images, and need sugge
 python3 get_vm_names.py
 ```
 
-The script reads `vm_list.csv` from the current directory and overwrites it, keeping the header and every column, only filling in blank `vm_name` values. Rows with `type` set to `vagrant` are suggested a name based on the Vagrant box in `name` (e.g. `ubuntu/bionic64` → `ubuntu_bionic`); rows with `type` set to `image` are suggested a name based on the zip file name in `name` (e.g. `manjaro_21.0.zip` → `manjaro_21.0`).
+The script reads `vm_list.csv` from the current directory and overwrites it, keeping the header and every column, only filling in blank `vm_name` values. Rows with `type` set to `vagrant` are suggested a name based on the Vagrant box (e.g. `ubuntu/bionic64` → `ubuntu_bionic`); rows with `type` set to `image` are suggested a name based on the zip file name (e.g. `manjaro_21.0.zip` → `manjaro_21.0`).
 
 ## Create Multiple VMs (Vagrant and Images)
 
@@ -313,7 +311,7 @@ image,manjaro_21.0.zip,manjaro_21.0,md5:daabd6555ad6c4776f6aa5f59dff05ea,manjaro
 
 ## Add a New VM via Vagrant
 
-A new virtual machine can be added manually via the VirtualBox manager or via Vagrant. To add a new VM via Vagrant, the script `new_vagrant` can be used. This script will create a folder and `Vagrantfile` with configuration for the VM, and then the VM will be created. The script also creates a folder for storing files containing captured network traffic and a file with information about the VM, such as the used VagrantBox, IP address, MAC address, and OS. The script uses get_os_info.py to retrieve OS information and update_info_file.sh to include this information in the file.
+ To add a new VM via Vagrant, the script `new_vagrant` can be used. This script will create a folder and `Vagrantfile` with configuration for the VM, and then the VM will be created. The script also creates a folder for storing files containing captured network traffic and a file with information about the VM, such as the used VagrantBox, IP address, MAC address, and OS. The script uses get_os_info.py to retrieve OS information and update_info_file.sh to include this information in the file.
 
 ### Usage:
 

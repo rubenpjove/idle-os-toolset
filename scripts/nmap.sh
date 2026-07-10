@@ -5,7 +5,7 @@ VMUSER="vmuser"
 VM_INFO_DIR="$(dirname "$(realpath "$0")")/../vm_info"
 
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
-OUT_DIR="$SCRIPT_DIR"
+OUT_DIR="$SCRIPT_DIR/../nmap"
 OUT_FILE="nmap_results_$(date +%Y%m%d_%H%M%S).csv"
 
 while [[ "$#" -gt 0 ]]; do
