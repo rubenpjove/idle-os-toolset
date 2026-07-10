@@ -50,7 +50,7 @@ All notable changes in this repository are documented in this file.
 - New VM creation from non-Vagrant images:
   - `scripts/new_image_vm.sh` to create a VM from a local `.zip`/`.7z` file containing an OVA, an exported VBOX folder, or a VDI disk, mirroring the `new_vagrant.sh` workflow for images downloaded from sites like osboxes.org or linuxvmimages.com.
   - `scripts/get_os_info_images.py`, the OS-detection counterpart to `get_os_info.py` for image-based VMs, connecting via SSH/WinRM/ADB.
-- New fleet management helpers:
+- New management scripts:
   - `scripts/boot_vm.sh` and `scripts/shutdown_vm.sh` to start/stop VMs without touching traffic capture or pcap processing, used in nmap scripts.
   - `scripts/resize_vm.sh` to change the CPU count and/or RAM of one or more powered-off VMs.
   - `scripts/set_network.sh` to switch a VM's NIC 1 between host-only and NAT networking.
@@ -67,7 +67,7 @@ All notable changes in this repository are documented in this file.
 
 - `scripts/start_vm.sh` can now also select VMs by position in the full VM list using an `N-M` range, and gained `-w`/`--wait` to control the delay between starting each VM in a batch (default: 5 seconds).
 - `scripts/stop_vm.sh` now strips malformed, short, or unreassembled packets from the pcap (via `tshark`) before finalizing the capture.  
-- `scripts/get_vm_names.py` now takes a `-m`/`--mode` option (`vagrant`, the default, or `image`), so besides suggesting VM names for `vagrant_list.txt` entries it can also fill in blank `vm_name` columns of `image_list.csv` based on each row's `zip` file name.
+- `scripts/get_vm_names.py` now reads/writes `vm_list.csv` instead of `vagrant_list.txt`: it requests names for rows with a blank `vm_name` and preserves every other column when rewriting the file, and picks a Vagrant-box or image-zip prompt per row based on its `type` column instead of only handling Vagrant boxes.
 - `README.md` and `INSTALL.md` were updated with usage instructions and installation requirements for all the new scripts.
 - `scripts/get_os_info.py` had its prompt improved for generating the OS-detection commands.
 
