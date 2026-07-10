@@ -1,0 +1,7 @@
+type,name,vm_name,hash,user,password,source,link
+image,PureOS_10.7z,pureos_10,md5:2d2b4ef0893f603a46b9b9b4fd50d949,pureos,pureos,linuxvmimages.com,https://www.linuxvmimages.com/images/pureos-10/
+image,android_8.1_R2.7z,android_8.1-r2,sha256:72235c4811647945716896a8f3cc02b7,,,osboxes,https://www.osboxes.org/android-x86/#android-x86-81-r2-vbox
+image,openSUSE_15.2.zip,opensuse_15.2,md5:94a430f8456fae0ec32265dc92869bda,opensuse,opensuse,osboxes,https://www.osboxes.org/opensuse/#opensuse-152-vbox
+vagrant,debian/bookworm64,debian_bookworm64,,,,,
+vagrant,debian/bookworm64,debian_bookworm64,,,,,
+vagrant,debian/bookworm64,debian_bookworm64,,,,,
