@@ -281,8 +281,10 @@ To create multiple VMs at once from a list, use `create_VMs.sh`. It reads `vm_li
 ### Usage
 
 ```bash
-./create_VMs.sh
+./create_VMs.sh [-n | --dry-run] [-h | --help]
 ```
+
+Use `-n`/`--dry-run` to validate `vm_list.csv` without creating any VM: it checks that the LLM provider used by `get_vm_names.py`/`get_os_info.py` (Groq, via `litellm`) is reachable with the configured `GROQ_API_KEY`, and that every `vagrant` row's box actually exists on [Vagrant Cloud](https://app.vagrantup.com). `image` rows aren't checked further in dry-run mode.
 
 The `vm_list.csv` file must exist in the current directory, with a header row followed by one row per VM in the following format:
 
