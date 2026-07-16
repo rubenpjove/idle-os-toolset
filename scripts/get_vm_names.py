@@ -13,6 +13,7 @@ VM_CSV_FIELDS = ["type", "name", "vm_name", "hash", "user", "password", "source"
 def ask_vm_names(prompt):
     response = completion(
         model="groq/openai/gpt-oss-120b",
+        fallbacks=["groq/openai/gpt-oss-20b"],
         messages=[
             {"role": "user", "content": prompt},
         ],

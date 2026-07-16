@@ -44,6 +44,7 @@ def generate_commands(vm_name, family):
 
     response = completion(
         model="groq/openai/gpt-oss-120b",
+        fallbacks=["groq/openai/gpt-oss-20b"],
         messages=[
             {"role": "user", "content": prompt},
         ],
@@ -165,6 +166,7 @@ def get_os_info(vm_name):
 
     response = completion(
         model="groq/openai/gpt-oss-120b",
+        fallbacks=["groq/openai/gpt-oss-20b"],
         messages=[
             {"role": "user", "content": prompt},
         ],

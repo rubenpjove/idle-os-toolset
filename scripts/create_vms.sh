@@ -59,6 +59,7 @@ try:
 
     completion(
         model="groq/openai/gpt-oss-120b",
+        fallbacks=["groq/openai/gpt-oss-20b"],
         messages=[{"role": "user", "content": "ping"}],
         max_tokens=1,
     )

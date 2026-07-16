@@ -273,5 +273,5 @@ cd "$TOOLSET_ROOT"/scripts
 
 This reads each entry in `vm_list.csv` and creates the corresponding VM.
 
-> **Note:** `create_vms.sh` also triggers automatic OS fingerprinting via the free-tier `gpt-oss-120b` model on GROQ. This free token quota is usually not enough to fingerprint every machine in `vm_list.csv` in a single run, so once the quota is exhausted the remaining requests will start failing. If this happens, stop the loop at that point and wait for the token quota to reset before resuming fingerprinting for the rest of the machines. 
+> **Note:** `create_vms.sh` also triggers automatic OS fingerprinting via `gpt-oss-120b` and `gpt-oss-20b` model on GROQ. Depending on how many machines are listed in `vm_list.csv`, the free token quota may or may not be enough to fingerprint all of them in a single run; if both models' quotas end up exhausted, the remaining requests will start failing. If this happens, stop the loop at that point and wait for the token quota to reset before resuming fingerprinting for the rest of the machines. 
 
