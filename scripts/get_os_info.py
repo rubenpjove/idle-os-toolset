@@ -1,18 +1,24 @@
 import argparse
 import os
+
+# Sigue siendo util para un cierre HTTP limpio (evita los errores SSL de aiohttp).
+os.environ["DISABLE_AIOHTTP_TRANSPORT"] = "True"
+
 import json
 import subprocess
 import shlex
-from litellm import completion
+import asyncio
+from litellm import acompletion
 from dotenv import load_dotenv
 
 load_dotenv()
 
-home=os.path.expanduser("~")
-os_info_path=home+"/os_info/"
-vm_list_path=home+"/vm_list.md"
+home = os.path.expanduser("~")
+os_info_path = home + "/os_info/"
+vm_list_path = home + "/vm_list.md"
 
-def generate_commands(vagrant_box, vm_name):
+
+async def generate_commands(vagrant_box, vm_name):
     prompt = f"""
             I am utilizing the following Vagrant box: https://portal.cloud.hashicorp.com/vagrant/discover/{vagrant_box}. 
             
@@ -29,7 +35,7 @@ def generate_commands(vagrant_box, vm_name):
             }}
             """
 
-    response = completion(
+    response = await acompletion(
         model="groq/openai/gpt-oss-120b",
         fallbacks=["groq/openai/gpt-oss-20b"],
         messages=[
@@ -60,6 +66,7 @@ def generate_commands(vagrant_box, vm_name):
             json.dump(json_data, f, indent=4)
         except json.JSONDecodeError:
             f.write(response.choices[0].message.content)
+
 
 def execute_commands(vagrant_box, vm_name):
 
@@ -92,7 +99,7 @@ def execute_commands(vagrant_box, vm_name):
         json.dump(command_outputs, f, indent=4)
 
 
-def get_os_info(vagrant_box, vm_name):
+async def get_os_info(vagrant_box, vm_name):
     with open(os_info_path + vm_name + "/commands_execute.json", "r") as f:
         command_outputs = json.load(f)
 
@@ -105,7 +112,6 @@ def get_os_info(vagrant_box, vm_name):
     except FileNotFoundError:
         print(f"Error: {vm_list_path} file not found.")
         vm_list = ""
-
 
     prompt = f"""
             I have executed the following commands {commands} and obtained the following outputs: {json.dumps(command_outputs)}.
@@ -121,7 +127,7 @@ def get_os_info(vagrant_box, vm_name):
             The values should be similar to the values of this file: {vm_list}.
             """
 
-    response = completion(
+    response = await acompletion(
         model="groq/openai/gpt-oss-120b",
         fallbacks=["groq/openai/gpt-oss-20b"],
         messages=[
@@ -152,6 +158,32 @@ def get_os_info(vagrant_box, vm_name):
             f.write(response.choices[0].message.content)
 
 
+async def shutdown_litellm():
+    try:
+        from litellm.litellm_core_utils.logging_worker import GLOBAL_LOGGING_WORKER
+        try:
+            await asyncio.wait_for(GLOBAL_LOGGING_WORKER.flush(), timeout=5)
+        except asyncio.TimeoutError:
+            pass
+        await GLOBAL_LOGGING_WORKER.stop()
+    except Exception:
+        pass
+    await asyncio.sleep(0)
+
+
+async def main(vagrant_box, vm_name):
+    try:
+        print(f"Getting OS info commands for virtual machine: {vm_name} with Vagrant box: {vagrant_box}")
+        await generate_commands(vagrant_box, vm_name)
+        print(f"Commands saved to {os_info_path + vm_name + '/commands.json'}")
+        execute_commands(vagrant_box, vm_name)
+        print(f"Command outputs saved to {os_info_path + vm_name + '/commands_execute.json'}")
+        await get_os_info(vagrant_box, vm_name)
+        print(f"OS information saved to {os_info_path + vm_name + '/os_info.json'}")
+    finally:
+        await shutdown_litellm()
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Get OS information of a vagrant box."
@@ -169,13 +201,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    print(f"Getting OS info commands for virtual machine: {args.vm_name} with Vagrant box: {args.vagrant_box}")
-    generate_commands(args.vagrant_box,args.vm_name)
-    print(f"Commands saved to {os_info_path + args.vm_name + '/commands.json'}")
-    execute_commands(args.vagrant_box,args.vm_name)
-    print(f"Command outputs saved to {os_info_path + args.vm_name + '/commands_execute.json'}")
-    get_os_info(args.vagrant_box,args.vm_name)
-    print(f"OS information saved to {os_info_path + args.vm_name + '/os_info.json'}")
-
-
-
+    asyncio.run(main(args.vagrant_box, args.vm_name))

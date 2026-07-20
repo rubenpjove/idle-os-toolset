@@ -174,7 +174,7 @@ fi
 
 # wait for the virtual machine to boot
 echo "Waiting for machine to boot, then will get info about OS, MAC and IP addresses ..."
-boot_timeout=150
+boot_timeout=90
 boot_interval=10
 boot_waited=0
 ipv4=$(su - $vmuser -c "VBoxManage guestproperty get '$VB_NAME' /VirtualBox/GuestInfo/Net/0/V4/IP")

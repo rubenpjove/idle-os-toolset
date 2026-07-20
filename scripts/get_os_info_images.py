@@ -1,10 +1,15 @@
 import argparse
 import os
+
+# Sigue siendo util para un cierre HTTP limpio (evita los errores SSL de aiohttp).
+os.environ["DISABLE_AIOHTTP_TRANSPORT"] = "True"
+
 import json
 import subprocess
+import asyncio
 import paramiko
 import winrm
-from litellm import completion
+from litellm import acompletion
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -23,7 +28,7 @@ def detect_family(vm_name):
     return "other"
 
 
-def generate_commands(vm_name, family):
+async def generate_commands(vm_name, family):
 
     prompt = f"""
             I have a virtual machine named '{vm_name}' running in VirtualBox.
@@ -42,7 +47,7 @@ def generate_commands(vm_name, family):
             }}
             """
 
-    response = completion(
+    response = await acompletion(
         model="groq/openai/gpt-oss-120b",
         fallbacks=["groq/openai/gpt-oss-20b"],
         messages=[
@@ -144,15 +149,19 @@ def execute_commands(vm_name, family, user, password, ssh_port, winrm_port, adb_
         json.dump(command_outputs, f, indent=4)
 
 
-def get_os_info(vm_name):
+async def get_os_info(vm_name):
     with open(os_info_path + vm_name + "/commands_execute.json", "r") as f:
         command_outputs = json.load(f)
 
     with open(os_info_path + vm_name + "/commands.json", "r") as f:
         commands = json.load(f).get("Commands", [])
 
-    with open(vm_list_path, "r") as f:
-        vm_list = f.read()
+    try:
+        with open(vm_list_path, "r") as f:
+            vm_list = f.read()
+    except FileNotFoundError:
+        print(f"Error: {vm_list_path} file not found.")
+        vm_list = ""
 
     prompt = f"""
             I have executed the following commands {commands} and obtained the following outputs: {json.dumps(command_outputs)}.
@@ -168,7 +177,7 @@ def get_os_info(vm_name):
             The values should be similar to the values of this file: {vm_list}.
             """
 
-    response = completion(
+    response = await acompletion(
         model="groq/openai/gpt-oss-120b",
         fallbacks=["groq/openai/gpt-oss-20b"],
         messages=[
@@ -199,6 +208,32 @@ def get_os_info(vm_name):
             f.write(response.choices[0].message.content)
 
 
+async def shutdown_litellm():
+    try:
+        from litellm.litellm_core_utils.logging_worker import GLOBAL_LOGGING_WORKER
+        try:
+            await asyncio.wait_for(GLOBAL_LOGGING_WORKER.flush(), timeout=5)
+        except asyncio.TimeoutError:
+            pass
+        await GLOBAL_LOGGING_WORKER.stop()
+    except Exception:
+        pass
+    await asyncio.sleep(0)
+
+
+async def main(vm_name, family, user, password, ssh_port, winrm_port, adb_port):
+    try:
+        print(f"Getting OS info commands for virtual machine: {vm_name} (detected family: {family})")
+        await generate_commands(vm_name, family)
+        print(f"Commands saved to {os_info_path + vm_name + '/commands.json'}")
+        execute_commands(vm_name, family, user, password, ssh_port, winrm_port, adb_port)
+        print(f"Command outputs saved to {os_info_path + vm_name + '/commands_execute.json'}")
+        await get_os_info(vm_name)
+        print(f"OS information saved to {os_info_path + vm_name + '/os_info.json'}")
+    finally:
+        await shutdown_litellm()
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Get OS information of a manually imported (OVA/VBOX/VDI) virtual machine."
@@ -224,10 +259,4 @@ if __name__ == "__main__":
     elif family == "android" and not args.adb_port:
         parser.error("--adb-port is required for Android guests")
 
-    print(f"Getting OS info commands for virtual machine: {args.vm_name} (detected family: {family})")
-    generate_commands(args.vm_name, family)
-    print(f"Commands saved to {os_info_path + args.vm_name + '/commands.json'}")
-    execute_commands(args.vm_name, family, args.user, args.password, args.ssh_port, args.winrm_port, args.adb_port)
-    print(f"Command outputs saved to {os_info_path + args.vm_name + '/commands_execute.json'}")
-    get_os_info(args.vm_name)
-    print(f"OS information saved to {os_info_path + args.vm_name + '/os_info.json'}")
+    asyncio.run(main(args.vm_name, family, args.user, args.password, args.ssh_port, args.winrm_port, args.adb_port))
