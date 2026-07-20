@@ -133,12 +133,12 @@ fi
 for vm_name in "${vm_array[@]}"; do   
     echo "-----------------------------------------------------------------"
     # Check if the virtual machine exists
-    if ! su - $user -c "vboxmanage list vms | grep -q '$vm_name'"; then
+    if ! su - $user -c "vboxmanage list vms | grep -q '\"$vm_name\"'"; then
         echo -e "${RED}Error: Virtual machine $vm_name does not exist.${NC}"
         continue
     fi
 
-    if  su - $user -c "vboxmanage list runningvms | grep -q '$vm_name'"; then
+    if  su - $user -c "vboxmanage list runningvms | grep -q '\"$vm_name\"'"; then
         echo -e "${RED}Error: Virtual machine $vm_name is already running.${NC}"
         continue
     fi

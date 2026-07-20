@@ -18,7 +18,7 @@ if [ -z "$vm_names" ]; then
     echo "Error: Missing required parameter"
     usage
 elif [ "$vm_names" = "all" ]; then
-    vm_names=$(su - $user -c "vboxmanage list runningvms" | awk -F'"' '{print $2}' | tr '\n' ',')
+    vm_names=$(su - $user -c "vboxmanage list runningvms" | awk -F'"' '{print $2}' | paste -sd, -)
 fi
 shift
 
@@ -35,13 +35,13 @@ for vm_name in "${vm_array[@]}"; do
     echo "Stopping the virtual machine $vm_name ..."
 
     # Check if the virtual machine exists
-    if ! su - $user -c "vboxmanage list vms | grep -q '$vm_name'"; then
+    if ! su - $user -c "vboxmanage list vms | grep -q '\"$vm_name\"'"; then
         echo "Error: Required virtual machine does not exist."
         continue
     fi
 
     # Check if the virtual machine is running
-    if ! su - $user -c "vboxmanage list runningvms" | grep -q "$vm_name"; then
+    if ! su - $user -c "vboxmanage list runningvms" | grep -q "\"$vm_name\""; then
         echo "Virtual machine is not running."
         continue
     fi

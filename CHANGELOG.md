@@ -36,11 +36,11 @@ All notable changes in this repository are documented in this file.
 
 ### Notes
 
-- We sincerely thank the CESNET-idle-OS-traffic research authos for providing and curating this repository, which enables reproducible work on idle operating-system traffic analysis.
+- We sincerely thank the CESNET-idle-OS-traffic research authors for providing and curating this repository, which enables reproducible work on idle operating-system traffic analysis.
 - This update focuses on improving usability and automation of the toolset so that creating and managing a set of virtual machines is more consistent and less manual.
 - The main objective is to automate OS metadata collection during VM provisioning through LLM-assisted command generation/execution, followed by structured extraction of OS family, type, and version.
 - Auxiliary CLI and GUI workflows were added to review and refine OS metadata after collection, supporting better data quality and easier validation.
-- The network traffic capture set was also expanded by adding new virtual machines (19) listed in `vm_list_added.md`, with notable growth in Windows and macOS coverage.
+- The network traffic capture set was also expanded by adding 19 new virtual machines, with notable growth in Windows and macOS coverage.
 
 
 ## [PR #2] - Unreleased
@@ -57,11 +57,11 @@ All notable changes in this repository are documented in this file.
   - `scripts/get_vms_config.sh` to list CPUs, memory, and NIC 1 mode for all registered VMs, with totals.
   - `scripts/check_vm_macs.sh` to detect duplicate NIC 1 MAC addresses across VMs and optionally randomize them.
 - New nmap scripts:
-  - `scripts/nmap.sh` to match running VMs to their IP (via ARP scan + MAC lookup) and run `nmap -O` against them, comparing the result to the VM's known ground-truth OS.
+  - `scripts/nmap.sh` to enumerate all registered VMs and match whichever ones are running to their IP (via ARP scan + MAC lookup), then run `nmap -O` against them, comparing the result to the VM's known ground-truth OS.
   - `scripts/nmap_batch_scan.sh` to orchestrate `nmap.sh` over VM ranges: boot the range, scan it, then shut it down before moving to the next range.
 - New captured-data statistics helper: `scripts/get_pcaps_stats.sh`, computing per-pcap duration, packet count, size, and protocol hierarchy, matched against each VM's OS info.
 - New script `scripts/capture_loop.sh` that allows to run `start_vm.sh` over several VM ranges one batch at a time, waiting for each batch to finish capturing and auto-stop before starting the next.
-- New VM creation flow: `scripts/vm_list.csv` lists both Vagrant boxes and non-Vagrant images to create, distinguished by a `type` column. `scripts/get_vm_names.py` reads this file and picks the right prompt per row based on `type`, and `scripts/create_VMs.sh` reads it and calls `new_vagrant.sh` or `new_image_vm.sh` per row, also based on `type`.
+- New VM creation flow: `scripts/vm_list.csv` lists both Vagrant boxes and non-Vagrant images to create, distinguished by a `type` column. `scripts/get_vm_names.py` reads this file and picks the right prompt per row based on `type`, and `scripts/create_vms.sh` reads it and calls `new_vagrant.sh` or `new_image_vm.sh` per row, also based on `type`.
 
 ### Changed
 

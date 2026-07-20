@@ -105,29 +105,33 @@ def run_winrm_command(command, user, password, port):
     return result.std_out.decode(errors="replace")
 
 
-def run_adb_command(command):
+def run_adb_command(command, adb_port):
     result = subprocess.run(
-        ["adb", "-s", "localhost:5555", "shell", command],
+        ["adb", "-s", f"localhost:{adb_port}", "shell", command],
         capture_output=True,
         text=True,
     )
     return result.stdout
 
 
-def execute_commands(vm_name, family, user, password, ssh_port, winrm_port):
+def execute_commands(vm_name, family, user, password, ssh_port, winrm_port, adb_port):
     with open(os_info_path + vm_name + "/commands.json", "r") as f:
-        data = json.load(f)
-        commands = data.get("Commands", [])
+        try:
+            data = json.load(f)
+            commands = data.get("Commands", [])
+        except json.JSONDecodeError:
+            print(f"Error: commands.json for {vm_name} is not valid JSON. Skipping command execution.")
+            commands = []
         command_outputs = {}
         print(f"Executing commands for {vm_name}:")
 
         if family == "android":
-            os.system("adb connect localhost:5555")
+            os.system(f"adb connect localhost:{adb_port}")
 
         for command in commands:
             try:
                 if family == "android":
-                    command_outputs[command] = run_adb_command(command)
+                    command_outputs[command] = run_adb_command(command, adb_port)
                 elif family == "windows":
                     command_outputs[command] = run_winrm_command(command, user, password, winrm_port)
                 else:
@@ -204,6 +208,7 @@ if __name__ == "__main__":
     parser.add_argument("-p", "--password", type=str, default=None, help="Remote access password (not needed for Android)")
     parser.add_argument("--ssh-port", type=int, help="Host port forwarded to guest")
     parser.add_argument("--winrm-port", type=int, help="Host port forwarded to guest WinRM")
+    parser.add_argument("--adb-port", type=int, help="Host port forwarded to guest ADB")
 
     args = parser.parse_args()
 
@@ -212,10 +217,17 @@ if __name__ == "__main__":
     if family != "android" and (not args.user or not args.password):
         parser.error("--user and --password are required for non-Android guests")
 
+    if family == "windows" and not args.winrm_port:
+        parser.error("--winrm-port is required for Windows guests")
+    elif family == "other" and not args.ssh_port:
+        parser.error("--ssh-port is required for this guest")
+    elif family == "android" and not args.adb_port:
+        parser.error("--adb-port is required for Android guests")
+
     print(f"Getting OS info commands for virtual machine: {args.vm_name} (detected family: {family})")
     generate_commands(args.vm_name, family)
     print(f"Commands saved to {os_info_path + args.vm_name + '/commands.json'}")
-    execute_commands(args.vm_name, family, args.user, args.password, args.ssh_port, args.winrm_port)
+    execute_commands(args.vm_name, family, args.user, args.password, args.ssh_port, args.winrm_port, args.adb_port)
     print(f"Command outputs saved to {os_info_path + args.vm_name + '/commands_execute.json'}")
     get_os_info(args.vm_name)
     print(f"OS information saved to {os_info_path + args.vm_name + '/os_info.json'}")

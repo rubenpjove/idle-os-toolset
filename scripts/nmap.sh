@@ -100,9 +100,9 @@ for vm_name in "${!VM_TO_IP[@]}"; do
     os_family=""; os_type=""; os_version=""
     json_file="$VM_INFO_DIR/${vm_name}.json"
     if [[ -f "$json_file" ]]; then
-        os_family=$(jq -r '.os_family'  "$json_file")
-        os_type=$(jq -r   '.os_type'    "$json_file")
-        os_version=$(jq -r '.os_version' "$json_file")
+        os_family=$(jq -r '.os_family // ""'  "$json_file")
+        os_type=$(jq -r   '.os_type // ""'    "$json_file")
+        os_version=$(jq -r '.os_version // ""' "$json_file")
         echo "  --- Ground-truth fingerprint ---"
         echo "  OS family  : $os_family"
         echo "  OS type    : $os_type"

@@ -9,3 +9,4 @@ python-is-python3: 3.9.2
 tshark: 3.6.2
 paramiko: 5.0.0
 pywinrm: 0.5.0
+nmap: 7.99

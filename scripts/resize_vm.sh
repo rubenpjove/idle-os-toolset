@@ -25,7 +25,7 @@ if [ -z "$vm_names" ]; then
     echo -e "${RED}Error: Missing required parameter.${NC}"
     usage
 elif [ "$vm_names" = "all" ]; then
-    vm_names=$(su - $user -c "vboxmanage list vms" | awk -F'"' '{print $2}' | tr '\n' ',')
+    vm_names=$(su - $user -c "vboxmanage list vms" | awk -F'"' '{print $2}' | paste -sd, -)
 fi
 shift
 

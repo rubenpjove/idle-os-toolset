@@ -20,7 +20,7 @@ For a list of available VMs, run the command `list_vms.sh`. To list only running
 
 ## Add or update information about a VM
 
-Before running any VM and capturing its network traffic, the info file must be configured. To configure this file, you can use the script `scripts/update_vm_info.sh`. Alternatively, you can configure this file manually. All files with information about VMs are stored in the folder `/data/virtual_machines/vm_info/`. In this folder, there is a JSON file for each VM; this file must have the same name as the VM in VirtualBox. The file must contain the following information:
+Before running any VM and capturing its network traffic, the info file must be configured. To configure this file, you can use the script `scripts/update_info_file.sh`. Alternatively, you can configure this file manually. All files with information about VMs are stored in the folder `/data/virtual_machines/vm_info/`. In this folder, there is a JSON file for each VM; this file must have the same name as the VM in VirtualBox. The file must contain the following information:
 
 ```json
 {
@@ -45,7 +45,7 @@ Fields `vm_name`, `source`, `os_family`, `os_type`, and `os_version` are require
 This script automatically adds the given information to the info file of a particular VM.
 
 ```bash
-./update_info_file.sh <vm_name> [-s source | --source source] [-l link | --link link] [-H hash | --hash hash] [-f os_family | --os_family os_family] [-t os_type | --os_type os_type] [-v os_version | --os_version os_version] [-i IPv4 | --IPv4 IPv4] [-m MAC | --MAC MAC] [-h | --help]
+./update_info_file.sh <vm_name> [-s source | --source source] [-l link | --link link] [-H hash | --hash hash] [-V vagrant_box | --vagrant_box vagrant_box] [-f os_family | --os_family os_family] [-t os_type | --os_type os_type] [-v os_version | --os_version os_version] [-i IPv4 | --IPv4 IPv4] [-m MAC | --MAC MAC] [-h | --help]
 ```
 
 | Short Option | Long Option        | Description                                           |
@@ -140,7 +140,7 @@ Both scripts accept the same `vm_name` forms as `start_vm.sh`/`stop_vm.sh`: a si
 
 ## OS fingerprinting with Nmap
 
-`nmap.sh` gets each running VirtualBox VM's IP address, via an `arp-scan`, then runs `nmap -O` against it to get an OS fingerprint. Results, together with the ground-truth OS info from the corresponding `vm_info/<vm_name>.json` file, are appended to a CSV file. This script evaluates how well Nmap's OS detection matches the real, known OS of each VM.
+`nmap.sh` enumerates all registered VirtualBox VMs and, via an `arp-scan`, matches each one to the IP address of whichever VMs are currently running and reachable on the network, then runs `nmap -O` against each matched VM to get an OS fingerprint. Results, together with the ground-truth OS info from the corresponding `vm_info/<vm_name>.json` file, are appended to a CSV file. This script evaluates how well Nmap's OS detection matches the real, known OS of each VM.
 
 ### Usage
 
@@ -218,7 +218,7 @@ get_vms_config.sh
 
 ## Captured pcap statistics
 
-`get_pcaps_stats.sh` walks the `traffic` folder and, for each `.pcap` file found, uses `tshark` to compute its duration, packet count, size, and protocol hierarchy. Each capture is matched to its VM to also record OS family, type, and version, and all results are wirtten to a CSV file.
+`get_pcaps_stats.sh` walks the `traffic` folder and, for each `.pcap` file found, uses `tshark` to compute its duration, packet count, size, and protocol hierarchy. Each capture is matched to its VM to also record OS family, type, and version, and all results are written to a CSV file.
 
 ### Usage
 
@@ -276,12 +276,12 @@ The script reads `vm_list.csv` from the current directory and overwrites it, kee
 
 ## Create Multiple VMs (Vagrant and Images)
 
-To create multiple VMs at once from a list, use `create_VMs.sh`. It reads `vm_list.csv` from the current directory and, for each row, calls `new_vagrant.sh` (if `type` is `vagrant`) or `new_image_vm.sh` (if `type` is `image`).
+To create multiple VMs at once from a list, use `create_vms.sh`. It reads `vm_list.csv` from the current directory and, for each row, calls `new_vagrant.sh` (if `type` is `vagrant`) or `new_image_vm.sh` (if `type` is `image`).
 
 ### Usage
 
 ```bash
-./create_VMs.sh [-n | --dry-run] [-h | --help]
+./create_vms.sh [-n | --dry-run] [-h | --help]
 ```
 
 Use `-n`/`--dry-run` to validate `vm_list.csv` without creating any VM: it checks that the LLM provider used by `get_vm_names.py`/`get_os_info.py` (Groq, via `litellm`) is reachable with the configured `GROQ_API_KEY`, and that every `vagrant` row's box actually exists on [Vagrant Cloud](https://app.vagrantup.com). `image` rows aren't checked further in dry-run mode.

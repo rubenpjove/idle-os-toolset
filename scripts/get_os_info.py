@@ -64,8 +64,12 @@ def generate_commands(vagrant_box, vm_name):
 def execute_commands(vagrant_box, vm_name):
 
     with open(os_info_path + vm_name + "/commands.json", "r") as f:
-        data = json.load(f)
-        commands = data.get("Commands", [])
+        try:
+            data = json.load(f)
+            commands = data.get("Commands", [])
+        except json.JSONDecodeError:
+            print(f"Error: commands.json for {vm_name} is not valid JSON. Skipping command execution.")
+            commands = []
         command_outputs = {}
         print(f"Executing commands for {vm_name}:")
         if "android" in vm_name.lower() or "android" in vagrant_box.lower():
@@ -78,7 +82,7 @@ def execute_commands(vagrant_box, vm_name):
         for command in commands:
             try:
                 command_to_run = shlex.split(remote_command.format(command))
-                result = subprocess.run(command_to_run, capture_output=True, text=True)
+                result = subprocess.run(command_to_run, capture_output=True, text=True, timeout=15)
                 command_outputs[command] = result.stdout
 
             except Exception as e:
@@ -95,8 +99,12 @@ def get_os_info(vagrant_box, vm_name):
     with open(os_info_path + vm_name + "/commands.json", "r") as f:
         commands = json.load(f).get("Commands", [])
 
-    with open(vm_list_path, "r") as f:
-        vm_list = f.read()
+    try:
+        with open(vm_list_path, "r") as f:
+            vm_list = f.read()
+    except FileNotFoundError:
+        print(f"Error: {vm_list_path} file not found.")
+        vm_list = ""
 
 
     prompt = f"""

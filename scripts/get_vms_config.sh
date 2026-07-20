@@ -32,7 +32,8 @@ while IFS= read -r vm_name; do
     printf "%-4s %-30s %6s %10s  %s\n" "$total_vms" "$vm_name" "$cpus" "$memory" "$nic1"
 
     total_cpus=$((total_cpus + ${cpus:-0}))
-    total_memory=$((total_memory + ${memory//MB/}))
+    mem_value=${memory//MB/}
+    total_memory=$((total_memory + ${mem_value:-0}))
 done <<< "$vm_names"
 
 echo "--------------------------------------------------------------------------------"

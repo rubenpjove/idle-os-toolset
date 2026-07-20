@@ -33,7 +33,7 @@ if [[ "$vm_names" == -* ]]; then
     usage
 fi
 if [ "$vm_names" = "all" ]; then
-    vm_names=$(su - $user -c "vboxmanage list vms" | awk -F'"' '{print $2}' | tr '\n' ',')
+    vm_names=$(su - $user -c "vboxmanage list vms" | awk -F'"' '{print $2}' | paste -sd, -)
     if [ -z "$vm_names" ]; then
         echo -e "${RED}Error: No virtual machines found.${NC}"
         exit 1
@@ -64,6 +64,13 @@ done
 if [ -z "$mode" ]; then
     echo -e "${RED}Error: You must specify --hostonly or --nat.${NC}"
     usage
+fi
+
+if [ "$mode" = "hostonly" ]; then
+    if ! su - $user -c "VBoxManage list hostonlyifs" | grep -qE "^Name:[[:space:]]*${hostonly_adapter}\$"; then
+        echo -e "${RED}Error: Host-only adapter '${hostonly_adapter}' does not exist. Create it first (e.g. 'VBoxManage hostonlyif create') or update hostonly_adapter in this script.${NC}"
+        exit 1
+    fi
 fi
 
 # set separator to comma

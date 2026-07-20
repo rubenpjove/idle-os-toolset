@@ -327,8 +327,16 @@ else
     echo "Virtual machine is running."
 fi
 
-echo "Waiting for machine to boot (90 seconds), then will get info about OS, MAC and IP addresses ..."
-sleep 90
+echo "Waiting for machine to boot, then will get info about OS, MAC and IP addresses ..."
+boot_timeout=150
+boot_interval=10
+boot_waited=0
+ipv4=$(su - $vmuser -c "VBoxManage guestproperty get '$VB_NAME' /VirtualBox/GuestInfo/Net/0/V4/IP")
+while [ "$ipv4" = "No value set!" ] && [ "$boot_waited" -lt "$boot_timeout" ]; do
+    sleep "$boot_interval"
+    boot_waited=$((boot_waited + boot_interval))
+    ipv4=$(su - $vmuser -c "VBoxManage guestproperty get '$VB_NAME' /VirtualBox/GuestInfo/Net/0/V4/IP")
+done
 
 mac=$(su - $vmuser -c "VBoxManage guestproperty get '$VB_NAME' /VirtualBox/GuestInfo/Net/0/MAC")
 if [ "$mac" = "No value set!" ]; then
@@ -336,7 +344,6 @@ if [ "$mac" = "No value set!" ]; then
 else
     mac=$(echo $mac | awk -F'[ ]+' '{print $2}' | sed -E 's/(..)(..)(..)(..)(..)(..)/\1:\2:\3:\4:\5:\6/')
 fi
-ipv4=$(su - $vmuser -c "VBoxManage guestproperty get '$VB_NAME' /VirtualBox/GuestInfo/Net/0/V4/IP")
 if [ "$ipv4" = "No value set!" ]; then
     ipv4="unknown"
 else
@@ -362,7 +369,7 @@ su - $vmuser -c "cat > ${PATH_INFO}${VB_NAME}.json <<EOF
 EOF
 "
 
-su - $vmuser -c "python3 ~/${PATH_SCRIPTS}get_os_info_images.py -b '$VB_NAME' -u '$REMOTE_USER' -p '$REMOTE_PASSWORD' --ssh-port $SSH_FWD_PORT --winrm-port $WINRM_FWD_PORT"
+su - $vmuser -c "python3 ~/${PATH_SCRIPTS}get_os_info_images.py -b '$VB_NAME' -u '$REMOTE_USER' -p '$REMOTE_PASSWORD' --ssh-port $SSH_FWD_PORT --winrm-port $WINRM_FWD_PORT --adb-port $ADB_PORT"
 
 echo -e "${GREEN}Virtual machine created successfully.${NC}"
 

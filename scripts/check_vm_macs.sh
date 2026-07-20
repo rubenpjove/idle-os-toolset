@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 # Checks for duplicate MACs across all VirtualBox VMs and randomizes the duplicates.
 
 set -euo pipefail
@@ -20,7 +20,7 @@ TAB=$'\t'
 echo "=== VirtualBox MAC Checker ==="
 echo ""
 
-mapfile -t vms < <(su "$VMUSER" -c "VBoxManage list vms" 2>/dev/null | awk -F'"' '{print $2}')
+mapfile -t vms < <(su - "$VMUSER" -c "VBoxManage list vms" 2>/dev/null | awk -F'"' '{print $2}')
 
 if [[ ${#vms[@]} -eq 0 ]]; then
     echo "No registered VMs found for user '$VMUSER'."
@@ -33,7 +33,7 @@ echo ""
 for vm in "${vms[@]}"; do
     [[ -z "$vm" ]] && continue
 
-    info=$(su "$VMUSER" -c "VBoxManage showvminfo \"$vm\"" 2>/dev/null) || {
+    info=$(su - "$VMUSER" -c "VBoxManage showvminfo \"$vm\"" 2>/dev/null) || {
         echo "  WARNING: Could not get info for '$vm', skipping." >&2
         continue
     }
@@ -90,7 +90,7 @@ for entry in "${to_fix[@]}"; do
     IFS=$'\t' read -r vm n old_mac <<< "$entry"
 
     # Check state by reading the "State:" line from showvminfo
-    state_line=$(su "$VMUSER" -c "VBoxManage showvminfo \"$vm\"" 2>/dev/null \
+    state_line=$(su - "$VMUSER" -c "VBoxManage showvminfo \"$vm\"" 2>/dev/null \
         | grep -i '^State:' | head -1)
 
     if echo "$state_line" | grep -qiE 'running|paused|saved'; then
@@ -102,9 +102,9 @@ for entry in "${to_fix[@]}"; do
     printf "  %-35s %s -> " "$vm" "$(format_mac "$old_mac")"
 
     # Equivalent to the "Generate a new random MAC address" button
-    su "$VMUSER" -c "VBoxManage modifyvm \"$vm\" --macaddress${n} auto"
+    su - "$VMUSER" -c "VBoxManage modifyvm \"$vm\" --macaddress${n} auto"
 
-    new_mac=$(su "$VMUSER" -c "VBoxManage showvminfo \"$vm\"" 2>/dev/null \
+    new_mac=$(su - "$VMUSER" -c "VBoxManage showvminfo \"$vm\"" 2>/dev/null \
         | grep -P "^NIC ${n}:" | grep -oP '(?<=MAC: )[0-9A-Fa-f]+')
     echo "$(format_mac "${new_mac^^}")"
     (( fixed++ )) || true

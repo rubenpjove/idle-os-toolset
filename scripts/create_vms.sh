@@ -14,7 +14,7 @@ usage() {
     echo "(vagrant box or image), via new_vagrant.sh / new_image_vm.sh."
     echo
     echo "  -n, --dry-run   Don't create any VM. Instead, validate that everything"
-    echo "                  create_VMs.sh needs is in place: the LLM provider used by"
+    echo "                  create_vms.sh needs is in place: the LLM provider used by"
     echo "                  get_vm_names.py/get_os_info.py is reachable, and every"
     echo "                  'vagrant' row's box exists on Vagrant Cloud."
     echo "  -h, --help      Show this help message"

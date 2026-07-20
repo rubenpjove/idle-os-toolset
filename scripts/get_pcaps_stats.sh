@@ -175,7 +175,7 @@ for folder in "$ROOT_DIR"/*/; do
                 if (max == "" || $1 > max) max = $1
             }
             END {
-                if (max != "") printf "%s %s %s %d", min, max, max, count
+                if (max != "") printf "%s %s %s %d", min, max, (max-min), count
             }')"
 
         pcap_date=$(basename "$(dirname "$pcap")" | grep -oP '^\d{4}-\d{2}-\d{2}')

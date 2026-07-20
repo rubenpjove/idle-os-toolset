@@ -55,12 +55,32 @@ for range in "${RANGES[@]}"; do
     echo "  BATCH: VMs $range"
     echo "========================================================"
 
+    # Resolve this batch's own VM names so we only wait on them, not on VMs from other batches
+    all_vms=$(su - "$user" -c "vboxmanage list vms" | awk -F'"' '{print $2}')
+    mapfile -t all_vms_array <<< "$all_vms"
+    if [[ "$range" =~ ^([0-9]+)-([0-9]+)$ ]]; then
+        range_start=${BASH_REMATCH[1]}
+        range_end=${BASH_REMATCH[2]}
+        batch_vms=("${all_vms_array[@]:$((range_start - 1)):$((range_end - range_start + 1))}")
+    else
+        IFS=',' read -r -a batch_vms <<< "$range"
+    fi
+
     echo "[*] Starting VMs $range with traffic capture ..."
     bash "$START_SCRIPT" "$range" "${START_ARGS[@]}"
 
     echo "[*] Waiting for VMs $range to finish capturing and auto-stop ..."
-    while su - "$user" -c "vboxmanage list runningvms" | grep -q .; do
-        sleep "$poll_interval"
+    batch_running=true
+    while $batch_running; do
+        batch_running=false
+        running_vms=$(su - "$user" -c "vboxmanage list runningvms")
+        for vm in "${batch_vms[@]}"; do
+            if grep -q "\"$vm\"" <<< "$running_vms"; then
+                batch_running=true
+                break
+            fi
+        done
+        [ "$batch_running" = true ] && sleep "$poll_interval"
     done
 
     echo "[*] Batch $range complete."

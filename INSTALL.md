@@ -52,11 +52,11 @@ fi
 The virtual environment should now be activated automatically every time you switch to `vmuser`.
 
 
-#### 4. Install VirtualBox, Extension Pack, Vagrant and jq
+#### 4. Install VirtualBox, Extension Pack, Vagrant and utilities
 
 Ubuntu:
 ```bash
-apt install jq unzip p7zip-full
+apt install jq unzip p7zip-full arp-scan
 
 wget "https://download.virtualbox.org/virtualbox/7.2.6/virtualbox-7.2_7.2.6-172322~Ubuntu~jammy_amd64.deb"
 apt install ./virtualbox-7.2_7.2.6-172322~Ubuntu~jammy_amd64.deb
@@ -229,7 +229,7 @@ chown -R vmuser:vmuser "$TOOLSET_ROOT"/
 usermod -aG virtualbox vmuser
 ```
 
-After this step, `vmuser` will own the entire project root directory (for example, `/mnt/ntfms`) and will belong to the `virtualbox` group, which allows it to manage VirtualBox virtual machines properly.
+After this step, `vmuser` will own the entire project root directory and will belong to the `virtualbox` group, which allows it to manage VirtualBox virtual machines properly.
 
 #### 9. Install Android communication tools
 
